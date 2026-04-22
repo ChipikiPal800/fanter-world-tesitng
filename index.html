@@ -4,332 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Fanter World | Prodigy-Style RPG</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      user-select: none;
-    }
-
-    body {
-      background: linear-gradient(135deg, #0a0f1a, #0d1525);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
-    }
-
-    #gameContainer {
-      position: relative;
-      border-radius: 20px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-      border: 3px solid #fbbf24;
-    }
-
-    #gameCanvas {
-      display: block;
-      cursor: crosshair;
-    }
-
-    /* Paper-style Dialog Box */
-    #dialogBox {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 550px;
-      background: #fef3c7;
-      border-radius: 16px;
-      padding: 18px 22px;
-      font-family: 'Courier New', monospace;
-      box-shadow: 0 8px 0 #d97706, 0 12px 20px rgba(0,0,0,0.3);
-      border: 1px solid #fbbf24;
-      transition: all 0.3s ease;
-      z-index: 100;
-    }
-
-    .dialog-hidden {
-      opacity: 0;
-      visibility: hidden;
-      transform: translateX(-50%) translateY(20px);
-    }
-
-    .dialog-name {
-      font-weight: bold;
-      font-size: 13px;
-      color: #b45309;
-      margin-bottom: 6px;
-      letter-spacing: 1px;
-    }
-
-    .dialog-text {
-      font-size: 13px;
-      color: #451a03;
-      line-height: 1.5;
-      min-height: 50px;
-    }
-
-    .dialog-arrow {
-      text-align: center;
-      margin-top: 8px;
-      color: #b45309;
-      animation: bounce 1s infinite;
-      cursor: pointer;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(5px); }
-    }
-
-    /* Quest Tracker */
-    #questTracker {
-      position: absolute;
-      top: 80px;
-      right: 20px;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 10px 16px;
-      min-width: 200px;
-      border-left: 4px solid #fbbf24;
-      font-family: monospace;
-      z-index: 90;
-    }
-
-    .quest-title {
-      font-size: 9px;
-      color: #fbbf24;
-      margin-bottom: 4px;
-      letter-spacing: 1px;
-    }
-
-    .quest-text {
-      font-size: 10px;
-      color: white;
-    }
-
-    /* Bottom Menu Bar */
-    #menuBar {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 50px;
-      padding: 8px 20px;
-      display: flex;
-      gap: 12px;
-      z-index: 90;
-      border: 1px solid #fbbf24;
-    }
-
-    .menu-btn {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      border-radius: 40px;
-      padding: 8px 18px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: monospace;
-      font-size: 11px;
-      transition: all 0.2s;
-    }
-
-    .menu-btn:hover {
-      background: #3b82f6;
-      transform: translateY(-2px);
-    }
-
-    /* Battle UI */
-    .battle-hidden {
-      display: none;
-    }
-
-    #battleUI {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 30%, #1a3a2a, #0a1a0a);
-      z-index: 200;
-      flex-direction: column;
-      font-family: monospace;
-    }
-
-    .battle-hud {
-      display: flex;
-      justify-content: space-between;
-      padding: 20px 40px;
-    }
-
-    .battle-card {
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 10px 20px;
-      min-width: 200px;
-      border: 2px solid;
-    }
-
-    .battle-card.enemy { border-color: #ef4444; }
-    .battle-card.player { border-color: #22c55e; }
-
-    .battle-name {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .enemy .battle-name { color: #f87171; }
-    .player .battle-name { color: #4ade80; }
-
-    .battle-hp-bar {
-      width: 140px;
-      height: 8px;
-      background: #333;
-      border-radius: 4px;
-      overflow: hidden;
-      margin: 5px 0;
-    }
-
-    .battle-hp-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #22c55e, #16a34a);
-      width: 100%;
-      transition: width 0.3s;
-    }
-
-    .battle-actions {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-      border-top: 3px solid #fbbf24;
-      padding: 20px 40px;
-    }
-
-    .battle-math {
-      background: rgba(0,0,0,0.5);
-      border-radius: 16px;
-      padding: 12px;
-      text-align: center;
-      margin-bottom: 12px;
-    }
-
-    .math-question {
-      font-size: 24px;
-      color: #fbbf24;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
-
-    .math-options {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .math-opt-btn {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-      border: none;
-      border-radius: 40px;
-      padding: 8px 20px;
-      color: white;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: monospace;
-    }
-
-    .battle-message {
-      background: rgba(0,0,0,0.7);
-      border-radius: 12px;
-      padding: 8px;
-      text-align: center;
-      margin-top: 10px;
-      color: #fbbf24;
-      font-size: 12px;
-    }
-
-    .battle-run {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      border: none;
-      border-radius: 40px;
-      padding: 8px 20px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25% { transform: translateX(-6px); }
-      75% { transform: translateX(6px); }
-    }
-    @keyframes flash {
-      0%,100% { filter: brightness(1); }
-      50% { filter: brightness(1.5); }
-    }
-    .shake-effect { animation: shake 0.3s ease-in-out; }
-    .flash-effect { animation: flash 0.3s ease-in-out; }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
-      color: #fbbf24;
-      padding: 8px 16px;
-      border-radius: 30px;
-      font-size: 11px;
-      z-index: 1000;
-      border: 1px solid #fbbf24;
-      animation: fadeOut 2s forwards;
-    }
-
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      70% { opacity: 1; }
-      100% { opacity: 0; visibility: hidden; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="gameContainer">
-  <canvas id="gameCanvas" width="1100" height="650"></canvas>
-
+  <canvas id="gameCanvas"></canvas>
+  
   <!-- Paper-style Dialog Box -->
   <div id="dialogBox" class="dialog-hidden">
     <div class="dialog-name" id="dialogName"></div>
     <div class="dialog-text" id="dialogText"></div>
     <div class="dialog-arrow">▼</div>
   </div>
-
+  
   <!-- Quest Tracker -->
   <div id="questTracker">
     <div class="quest-title">📜 CURRENT QUEST</div>
     <div class="quest-text" id="questText">Awaken and find Mewt</div>
+    <div class="quest-subtext" id="questSubtext"></div>
   </div>
-
+  
   <!-- Bottom Menu Bar -->
   <div id="menuBar">
     <button class="menu-btn" id="menuBtn">⚔️ MENU</button>
+    <button class="menu-btn" id="forestBtn">🌲 FOREST</button>
+    <button class="menu-btn" id="bagBtn">🎒 BAG</button>
+    <button class="menu-btn" id="petsBtn">🐱 PETS</button>
     <button class="menu-btn" id="saveBtn">💾 SAVE</button>
-    <button class="menu-btn" id="resetBtn">🔄 RESET</button>
   </div>
-
+  
   <!-- Battle UI -->
   <div id="battleUI" class="battle-hidden">
     <div class="battle-hud">
@@ -357,26 +60,31 @@
 
 <script>
   // ============================================================
-  // FANTER WORLD - COMPLETE WORKING DEMO
+  // FANTER WORLD - COMPLETE GAME (ALL IN ONE)
   // ============================================================
   
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   
+  // Set canvas to full screen
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  
   // ============================================================
   // WORLD SETUP
   // ============================================================
-  const WORLD_W = 2500;
-  const WORLD_H = 2500;
-  const VIEW_W = 1100;
-  const VIEW_H = 650;
-  
-  let camX = WORLD_W/2 - VIEW_W/2;
-  let camY = WORLD_H/2 - VIEW_H/2;
+  const WORLD_W = 3500;
+  const WORLD_H = 3500;
+  let camX = 0;
+  let camY = 0;
   
   // Trees
   const trees = [];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 80; i++) {
     trees.push({
       x: 200 + Math.random() * (WORLD_W - 400),
       y: 200 + Math.random() * (WORLD_H - 400),
@@ -387,21 +95,35 @@
   // Enemies
   let enemies = [
     { id: 'slime', name: 'SLIME', x: 800, y: 600, hp: 30, maxHp: 30, attack: 7, exp: 35, coins: 25, color: '#86efac' },
-    { id: 'slime', name: 'SLIME', x: 1200, y: 800, hp: 30, maxHp: 30, attack: 7, exp: 35, coins: 25, color: '#86efac' },
-    { id: 'goblin', name: 'GOBLIN', x: 1600, y: 1000, hp: 40, maxHp: 40, attack: 9, exp: 50, coins: 35, color: '#fbbf24' },
-    { id: 'shadow', name: 'SHADOWPAW', x: 500, y: 1500, hp: 50, maxHp: 50, attack: 12, exp: 70, coins: 50, color: '#a855f7' },
+    { id: 'slime', name: 'SLIME', x: 1200, y: 900, hp: 30, maxHp: 30, attack: 7, exp: 35, coins: 25, color: '#86efac' },
+    { id: 'goblin', name: 'GOBLIN', x: 1600, y: 1100, hp: 40, maxHp: 40, attack: 9, exp: 50, coins: 35, color: '#fbbf24' },
   ];
   
   // ============================================================
-  // PLAYER & PET DATA (with save)
+  // PLAYER & PET
   // ============================================================
+  let player = {
+    x: WORLD_W/2,
+    y: WORLD_H/2,
+    targetX: WORLD_W/2,
+    targetY: WORLD_H/2,
+    speed: 4,
+    walkCycle: 0
+  };
+  
+  let pet = {
+    x: player.x - 45,
+    y: player.y,
+    walkCycle: 0
+  };
+  
   let gameState = {
-    playerName: 'Hero',
     playerLevel: 1,
     playerExp: 0,
     playerCoins: 150,
-    playerX: WORLD_W/2,
-    playerY: WORLD_H/2,
+    currentArea: 'plains',
+    hasWand: false,
+    hasRobe: false,
     pet: {
       name: 'MEWT',
       hp: 45,
@@ -409,69 +131,11 @@
       attack: 12,
       defense: 8,
       level: 1,
-      exp: 0,
-      expNeeded: 100,
       color: '#22c55e'
-    },
-    storyPoint: 0,
-    hasWand: false,
-    hasRobe: false,
-    defeatedBosses: []
-  };
-  
-  // Load save
-  function loadGame() {
-    const saved = localStorage.getItem('fanterWorldSave');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        gameState = data;
-        console.log('✅ Game loaded!');
-        showToast('Game loaded!');
-        return true;
-      } catch(e) {}
     }
-    return false;
-  }
-  
-  function saveGame() {
-    localStorage.setItem('fanterWorldSave', JSON.stringify(gameState));
-    showToast('✅ Game saved!');
-  }
-  
-  function resetGame() {
-    if (confirm('Reset all progress? This cannot be undone!')) {
-      localStorage.removeItem('fanterWorldSave');
-      location.reload();
-    }
-  }
-  
-  function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-  }
-  
-  // ============================================================
-  // PLAYER MOVEMENT
-  // ============================================================
-  let player = {
-    x: gameState.playerX,
-    y: gameState.playerY,
-    targetX: gameState.playerX,
-    targetY: gameState.playerY,
-    speed: 3.2,
-    walkCycle: 0
   };
   
-  let pet = {
-    x: player.x - 40,
-    y: player.y,
-    walkCycle: 0
-  };
-  
+  // Movement keys
   let keys = { w: false, s: false, a: false, d: false };
   
   // Battle state
@@ -482,12 +146,7 @@
   let currentQuestion = null;
   let isAnimating = false;
   
-  // Cutscene state
-  let inCutscene = false;
-  let currentDialogIndex = 0;
-  let currentDialogs = [];
-  
-  // Math questions (Kindergarten - 2nd grade)
+  // Math questions
   const mathQuestions = [
     { q: "1 + 1 = ?", a: 2, opts: [0,1,2,3] },
     { q: "2 + 2 = ?", a: 4, opts: [2,3,4,5] },
@@ -495,95 +154,10 @@
     { q: "5 - 2 = ?", a: 3, opts: [1,2,3,4] },
     { q: "2 + 3 = ?", a: 5, opts: [3,4,5,6] },
     { q: "4 - 1 = ?", a: 3, opts: [1,2,3,4] },
-    { q: "1 + 0 = ?", a: 1, opts: [0,1,2,3] },
-    { q: "3 - 1 = ?", a: 2, opts: [1,2,3,4] },
-    { q: "2 + 4 = ?", a: 6, opts: [4,5,6,7] },
-    { q: "5 - 3 = ?", a: 2, opts: [1,2,3,4] },
   ];
   
   function getRandomQuestion() {
     return { ...mathQuestions[Math.floor(Math.random() * mathQuestions.length)] };
-  }
-  
-  // ============================================================
-  // DIALOG/CUTSCENE SYSTEM
-  // ============================================================
-  const cutscenes = {
-    wakeUp: {
-      dialogs: [
-        { speaker: '???', text: '...' },
-        { speaker: '???', text: 'Your vision slowly returns...' },
-        { speaker: 'MEWT', text: 'Meow! Meow! Wake up!' },
-        { speaker: 'MEWT', text: 'Something strange is happening!' },
-        { speaker: 'You', text: 'Ugh... my head... Where am I?' },
-        { speaker: 'MEWT', text: 'You were knocked out! A dark figure attacked us!' }
-      ],
-      onComplete: () => {
-        gameState.storyPoint = 1;
-        updateQuestUI();
-        showToast('✨ Quest updated: First Battle ✨');
-      }
-    },
-    firstVictory: {
-      dialogs: [
-        { speaker: '???', text: 'Impressive... That cat of yours has potential.' },
-        { speaker: 'You', text: 'Who are you? Why did you attack us?' },
-        { speaker: '???', text: 'I was testing you. The Fanter is coming.' },
-        { speaker: '???', text: 'Go to Emberfall Town. Join the Wizard Program.' },
-        { speaker: 'MEWT', text: 'Meow! (determined)' }
-      ],
-      onComplete: () => {
-        gameState.hasWand = true;
-        gameState.hasRobe = true;
-        gameState.storyPoint = 2;
-        updateQuestUI();
-        showToast('✨ You received a Wizard Wand and Robe! ✨');
-      }
-    }
-  };
-  
-  function startCutscene(cutsceneId) {
-    inCutscene = true;
-    currentDialogIndex = 0;
-    currentDialogs = cutscenes[cutsceneId].dialogs;
-    showDialog();
-  }
-  
-  function showDialog() {
-    if (currentDialogIndex >= currentDialogs.length) {
-      endCutscene();
-      return;
-    }
-    const dialog = currentDialogs[currentDialogIndex];
-    document.getElementById('dialogName').textContent = dialog.speaker;
-    document.getElementById('dialogText').textContent = dialog.text;
-    document.getElementById('dialogBox').classList.remove('dialog-hidden');
-  }
-  
-  function nextDialog() {
-    if (!inCutscene) return;
-    currentDialogIndex++;
-    showDialog();
-  }
-  
-  function endCutscene() {
-    inCutscene = false;
-    document.getElementById('dialogBox').classList.add('dialog-hidden');
-    const currentCutscene = Object.values(cutscenes).find(c => c.dialogs === currentDialogs);
-    if (currentCutscene && currentCutscene.onComplete) {
-      currentCutscene.onComplete();
-    }
-  }
-  
-  function updateQuestUI() {
-    const quests = [
-      'Awaken and find Mewt',
-      'Defeat the mysterious attacker',
-      'Join the Wizard Program',
-      'Explore the world and grow stronger'
-    ];
-    const questText = quests[Math.min(gameState.storyPoint, quests.length - 1)];
-    document.getElementById('questText').textContent = questText;
   }
   
   // ============================================================
@@ -602,7 +176,7 @@
   // MOVEMENT
   // ============================================================
   function handleMovement() {
-    if (inBattle || inCutscene) return;
+    if (inBattle) return;
     
     let mx = 0, my = 0;
     if (keys.w) my -= 1;
@@ -618,8 +192,8 @@
       let nx = player.x + mx * player.speed;
       let ny = player.y + my * player.speed;
       
-      if (!checkCollision(nx, player.y, 18)) player.x = nx;
-      if (!checkCollision(player.x, ny, 18)) player.y = ny;
+      if (!checkCollision(nx, player.y, 20)) player.x = nx;
+      if (!checkCollision(player.x, ny, 20)) player.y = ny;
       
       player.walkCycle += 0.15;
     } else {
@@ -628,20 +202,19 @@
     
     // Pet follow
     const angle = Math.atan2(player.y - pet.y, player.x - pet.x);
-    pet.x += Math.cos(angle) * 2.5;
-    pet.y += Math.sin(angle) * 2.5;
+    pet.x += Math.cos(angle) * 2.8;
+    pet.y += Math.sin(angle) * 2.8;
     pet.walkCycle += 0.1;
     
     // Camera follow
-    camX = player.x - VIEW_W/2;
-    camY = player.y - VIEW_H/2;
-    camX = Math.max(0, Math.min(camX, WORLD_W - VIEW_W));
-    camY = Math.max(0, Math.min(camY, WORLD_H - VIEW_H));
+    camX = player.x - canvas.width/2;
+    camY = player.y - canvas.height/2;
+    camX = Math.max(0, Math.min(camX, WORLD_W - canvas.width));
+    camY = Math.max(0, Math.min(camY, WORLD_H - canvas.height));
     
-    // Check enemy collision
-    for (let i = 0; i < enemies.length; i++) {
-      const e = enemies[i];
-      if (Math.hypot(player.x - e.x, player.y - e.y) < 35 && !inBattle && !inCutscene) {
+    // Enemy collision
+    for (const e of enemies) {
+      if (Math.hypot(player.x - e.x, player.y - e.y) < 40 && !inBattle) {
         startBattle(e);
         break;
       }
@@ -649,18 +222,16 @@
   }
   
   function handleClickMove(e) {
-    if (inBattle || inCutscene) return;
+    if (inBattle) return;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const mouseX = (e.clientX - rect.left) * scaleX;
-    const mouseY = (e.clientY - rect.top) * scaleY;
+    const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
     player.targetX = camX + mouseX;
     player.targetY = camY + mouseY;
   }
   
   function updateClickMove() {
-    if (inBattle || inCutscene) return;
+    if (inBattle) return;
     const dx = player.targetX - player.x;
     const dy = player.targetY - player.y;
     const dist = Math.hypot(dx, dy);
@@ -670,8 +241,8 @@
       const my = (dy / dist) * player.speed;
       let nx = player.x + mx;
       let ny = player.y + my;
-      if (!checkCollision(nx, player.y, 18)) player.x = nx;
-      if (!checkCollision(player.x, ny, 18)) player.y = ny;
+      if (!checkCollision(nx, player.y, 20)) player.x = nx;
+      if (!checkCollision(player.x, ny, 20)) player.y = ny;
       player.walkCycle += 0.15;
     } else {
       player.walkCycle = 0;
@@ -698,7 +269,6 @@
     
     updateBattleBars();
     renderMathOptions();
-    
     document.getElementById('battleUI').style.display = 'flex';
   }
   
@@ -798,24 +368,11 @@
     
     gameState.playerExp += expGain;
     gameState.playerCoins += coinGain;
-    gameState.pet.exp += expGain;
     
     let message = `Victory! +${expGain} XP, +${coinGain} coins!`;
     
-    // Level up pet
-    if (gameState.pet.exp >= gameState.pet.expNeeded) {
-      gameState.pet.level++;
-      gameState.pet.exp -= gameState.pet.expNeeded;
-      gameState.pet.expNeeded = Math.floor(gameState.pet.expNeeded * 1.3);
-      gameState.pet.maxHp += 8;
-      gameState.pet.hp = gameState.pet.maxHp;
-      gameState.pet.attack += 3;
-      gameState.pet.defense += 2;
-      message += `\n🌟 MEWT grew to Lv${gameState.pet.level}! 🌟`;
-    }
-    
-    // Level up player
-    const needed = gameState.playerLevel * 100;
+    // Level up
+    const needed = (gameState.playerLevel + 1) * 50;
     if (gameState.playerExp >= needed) {
       gameState.playerLevel++;
       gameState.playerExp -= needed;
@@ -823,43 +380,26 @@
     }
     
     document.getElementById('battleMessage').innerHTML = message;
-    updateUI();
     
     // Remove defeated enemy
     const index = enemies.findIndex(e => e.x === currentEnemy.x && e.y === currentEnemy.y);
     if (index !== -1) enemies.splice(index, 1);
-    
-    // Check for first battle story trigger
-    if (gameState.storyPoint === 1 && currentEnemy.name === 'SLIME') {
-      setTimeout(() => {
-        document.getElementById('battleUI').style.display = 'none';
-        inBattle = false;
-        startCutscene('firstVictory');
-      }, 3000);
-    } else {
-      setTimeout(() => {
-        document.getElementById('battleUI').style.display = 'none';
-        inBattle = false;
-        currentEnemy = null;
-        isAnimating = false;
-        saveGame();
-      }, 3000);
-    }
-  }
-  
-  function loseBattle() {
-    document.getElementById('battleMessage').innerHTML = `You fainted... Running to heal!`;
-    gameState.pet.hp = gameState.pet.maxHp;
-    battlePetHp = gameState.pet.hp;
-    updateUI();
     
     setTimeout(() => {
       document.getElementById('battleUI').style.display = 'none';
       inBattle = false;
       currentEnemy = null;
       isAnimating = false;
-      player.x = WORLD_W/2;
-      player.y = WORLD_H/2;
+    }, 3000);
+  }
+  
+  function loseBattle() {
+    document.getElementById('battleMessage').innerHTML = `You fainted... Running to heal!`;
+    setTimeout(() => {
+      document.getElementById('battleUI').style.display = 'none';
+      inBattle = false;
+      currentEnemy = null;
+      isAnimating = false;
     }, 2000);
   }
   
@@ -877,16 +417,13 @@
   // DRAW FUNCTIONS
   // ============================================================
   function drawGround() {
-    const grad = ctx.createLinearGradient(0, 0, 0, VIEW_H);
-    grad.addColorStop(0, '#4a7c3f');
-    grad.addColorStop(1, '#3a6b33');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, VIEW_W, VIEW_H);
+    ctx.fillStyle = '#3a7a33';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Grass texture dots
-    for (let i = 0; i < 400; i++) {
+    // Grass texture
+    for (let i = 0; i < 600; i++) {
       ctx.fillStyle = '#5a9e4b';
-      ctx.fillRect((i * 131) % VIEW_W, (i * 253) % VIEW_H, 2, 2);
+      ctx.fillRect((i * 131) % canvas.width, (i * 253) % canvas.height, 2, 2);
     }
   }
   
@@ -894,15 +431,13 @@
     for (const tree of trees) {
       const x = tree.x - camX;
       const y = tree.y - camY;
-      if (x > -50 && x < VIEW_W + 50 && y > -60 && y < VIEW_H + 60) {
+      if (x > -60 && x < canvas.width + 60 && y > -80 && y < canvas.height + 80) {
         ctx.fillStyle = 'rgba(0,0,0,0.15)';
         ctx.beginPath();
         ctx.ellipse(x + 3, y + 25, 14, 5, 0, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = '#8B5A2B';
         ctx.fillRect(x - 5, y + 5, 10, 20);
-        
         ctx.fillStyle = '#2d6e2d';
         ctx.beginPath();
         ctx.arc(x, y - 3, 16, 0, Math.PI * 2);
@@ -922,19 +457,16 @@
     for (const e of enemies) {
       const x = e.x - camX;
       const y = e.y - camY;
-      if (x > -50 && x < VIEW_W + 50 && y > -60 && y < VIEW_H + 60) {
+      if (x > -60 && x < canvas.width + 60 && y > -80 && y < canvas.height + 80) {
         const bounce = Math.sin(Date.now() / 200) * 2;
-        
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath();
         ctx.ellipse(x + 2, y + 18 + bounce, 12, 5, 0, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = e.color;
         ctx.beginPath();
         ctx.arc(x, y + 5 + bounce, 14, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = '#fff';
         ctx.fillRect(x - 6, y + 1 + bounce, 4, 4);
         ctx.fillRect(x + 2, y + 1 + bounce, 4, 4);
@@ -956,7 +488,6 @@
     ctx.ellipse(x + 3, y + 28, 14, 5, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    // Cape
     ctx.fillStyle = '#fbbf24';
     ctx.beginPath();
     ctx.moveTo(x - 11, y - 2 + bob);
@@ -964,39 +495,24 @@
     ctx.quadraticCurveTo(x + 5, y + 16 + bob, x + 11, y - 2 + bob);
     ctx.fill();
     
-    // Body
-    ctx.fillStyle = gameState.hasRobe ? '#8b5cf6' : '#3b82f6';
+    ctx.fillStyle = '#3b82f6';
     ctx.fillRect(x - 11, y - 7 + bob, 22, 28);
     
-    // Legs
     ctx.fillStyle = '#2563eb';
     ctx.fillRect(x - 8 + legSwing * 0.4, y + 17 + bob, 6, 13);
     ctx.fillRect(x + 2 - legSwing * 0.4, y + 17 + bob, 6, 13);
     
-    // Head
     ctx.fillStyle = '#fcd34d';
     ctx.beginPath();
     ctx.arc(x, y - 12 + bob, 13, 0, Math.PI * 2);
     ctx.fill();
     
-    // Hair
     ctx.fillStyle = '#d97706';
     ctx.fillRect(x - 9, y - 23 + bob, 18, 7);
     
-    // Eyes
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(x - 5, y - 15 + bob, 3, 4);
     ctx.fillRect(x + 2, y - 15 + bob, 3, 4);
-    
-    // Wand
-    if (gameState.hasWand) {
-      ctx.fillStyle = '#8B5A2B';
-      ctx.fillRect(x + 12, y - 5 + bob, 3, 30);
-      ctx.fillStyle = '#60a5fa';
-      ctx.beginPath();
-      ctx.arc(x + 13, y - 8 + bob, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
   }
   
   function drawPet() {
@@ -1010,25 +526,21 @@
     ctx.ellipse(x + 2, y + 20, 11, 4, 0, 0, Math.PI * 2);
     ctx.fill();
     
-    ctx.fillStyle = gameState.pet.color;
+    ctx.fillStyle = '#22c55e';
     ctx.fillRect(x - 9, y - 2 + bob, 18, 20);
     
-    // Tail
     ctx.fillStyle = '#16a34a';
     ctx.fillRect(x + 10, y + 4 + bob, 8 + runCycle * 0.5, 4);
     
-    // Head
-    ctx.fillStyle = gameState.pet.color;
+    ctx.fillStyle = '#22c55e';
     ctx.beginPath();
     ctx.arc(x, y - 8 + bob, 10, 0, Math.PI * 2);
     ctx.fill();
     
-    // Ears
     ctx.fillStyle = '#16a34a';
     ctx.fillRect(x - 7, y - 15 + bob, 4, 7);
     ctx.fillRect(x + 3, y - 15 + bob, 4, 7);
     
-    // Eyes
     ctx.fillStyle = '#fff';
     ctx.fillRect(x - 4, y - 11 + bob, 3, 4);
     ctx.fillRect(x + 1, y - 11 + bob, 3, 4);
@@ -1036,33 +548,87 @@
     ctx.fillRect(x - 3, y - 10 + bob, 2, 3);
     ctx.fillRect(x + 2, y - 10 + bob, 2, 3);
     
-    // Nose
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(x - 1, y - 6 + bob, 2, 2);
   }
   
-  function updateUI() {
-    const needed = gameState.playerLevel * 100;
-    const xpPercent = (gameState.playerExp / needed) * 100;
-    document.getElementById('xpFillBar')?.setAttribute('style', `width:${Math.min(100, xpPercent)}%`);
-    document.getElementById('xpCurrent')?.setAttribute('textContent', gameState.playerExp);
-    document.getElementById('coinAmount')?.setAttribute('textContent', gameState.playerCoins);
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+  
+  function saveGame() {
+    localStorage.setItem('fanterWorldSave', JSON.stringify({
+      playerLevel: gameState.playerLevel,
+      playerExp: gameState.playerExp,
+      playerCoins: gameState.playerCoins,
+      playerX: player.x,
+      playerY: player.y
+    }));
+    showToast('✅ Game saved!');
+  }
+  
+  function loadGame() {
+    const saved = localStorage.getItem('fanterWorldSave');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        gameState.playerLevel = data.playerLevel || 1;
+        gameState.playerExp = data.playerExp || 0;
+        gameState.playerCoins = data.playerCoins || 150;
+        player.x = data.playerX || WORLD_W/2;
+        player.y = data.playerY || WORLD_H/2;
+        player.targetX = player.x;
+        player.targetY = player.y;
+        showToast('Game loaded!');
+      } catch(e) {}
+    }
   }
   
   // ============================================================
-  // EVENT HANDLERS
+  // FOREST BUTTON
+  // ============================================================
+  document.getElementById('forestBtn').addEventListener('click', () => {
+    if (confirm('Teleport to the Whispering Woods?')) {
+      player.x = 1800;
+      player.y = 1400;
+      player.targetX = 1800;
+      player.targetY = 1400;
+      showToast('🌲 Welcome to the Whispering Woods!');
+    }
+  });
+  
+  // ============================================================
+  // MENU BUTTONS
+  // ============================================================
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    alert(`⚔️ STATS\nLevel: ${gameState.playerLevel}\nXP: ${gameState.playerExp}\nCoins: ${gameState.playerCoins}\n\n🐱 MEWT\nHP: ${gameState.pet.hp}/${gameState.pet.maxHp}\nAttack: ${gameState.pet.attack}\nDefense: ${gameState.pet.defense}`);
+  });
+  
+  document.getElementById('bagBtn').addEventListener('click', () => {
+    alert(`🎒 YOUR BAG\n🪙 ${gameState.playerCoins} coins\n⭐ ${gameState.playerExp} XP`);
+  });
+  
+  document.getElementById('petsBtn').addEventListener('click', () => {
+    alert(`🐱 MEWT - Level ${gameState.pet.level}\n❤️ HP: ${gameState.pet.hp}/${gameState.pet.maxHp}\n⚔️ Attack: ${gameState.pet.attack}\n🛡️ Defense: ${gameState.pet.defense}`);
+  });
+  
+  document.getElementById('saveBtn').addEventListener('click', saveGame);
+  document.getElementById('runBtn').addEventListener('click', runBattle);
+  
+  // ============================================================
+  // KEYBOARD CONTROLS
   // ============================================================
   document.addEventListener('keydown', (e) => {
-    if (inBattle || inCutscene) return;
+    if (inBattle) return;
     const k = e.key.toLowerCase();
     if (k === 'w') keys.w = true;
     if (k === 's') keys.s = true;
     if (k === 'a') keys.a = true;
     if (k === 'd') keys.d = true;
-    if (['w','s','a','d'].includes(k)) {
-      player.targetX = player.x;
-      player.targetY = player.y;
-    }
   });
   
   document.addEventListener('keyup', (e) => {
@@ -1074,13 +640,6 @@
   });
   
   canvas.addEventListener('click', handleClickMove);
-  document.getElementById('dialogBox').addEventListener('click', nextDialog);
-  document.getElementById('runBtn').addEventListener('click', runBattle);
-  document.getElementById('menuBtn').addEventListener('click', () => {
-    alert(`⚔️ STATS\nLevel: ${gameState.playerLevel}\nXP: ${gameState.playerExp}/${gameState.playerLevel * 100}\nCoins: ${gameState.playerCoins}\n\n🐱 MEWT\nLevel: ${gameState.pet.level}\nHP: ${gameState.pet.hp}/${gameState.pet.maxHp}\nAttack: ${gameState.pet.attack}\nDefense: ${gameState.pet.defense}`);
-  });
-  document.getElementById('saveBtn').addEventListener('click', saveGame);
-  document.getElementById('resetBtn').addEventListener('click', resetGame);
   
   // ============================================================
   // ANIMATION LOOP
@@ -1088,13 +647,6 @@
   function animate() {
     handleMovement();
     updateClickMove();
-    
-    // Sky gradient
-    const grad = ctx.createLinearGradient(0, 0, 0, VIEW_H);
-    grad.addColorStop(0, '#87CEEB');
-    grad.addColorStop(1, '#bae6fd');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, VIEW_W, VIEW_H);
     
     drawGround();
     drawTrees();
@@ -1106,30 +658,10 @@
   }
   
   // ============================================================
-  // INITIALIZE
+  // INIT
   // ============================================================
-  function init() {
-    canvas.width = VIEW_W;
-    canvas.height = VIEW_H;
-    
-    const loaded = loadGame();
-    player.x = gameState.playerX;
-    player.y = gameState.playerY;
-    player.targetX = gameState.playerX;
-    player.targetY = gameState.playerY;
-    pet.x = player.x - 40;
-    pet.y = player.y;
-    
-    if (gameState.storyPoint === 0 && !loaded) {
-      startCutscene('wakeUp');
-    }
-    
-    updateUI();
-    updateQuestUI();
-    animate();
-  }
-  
-  init();
+  loadGame();
+  animate();
 </script>
 </body>
 </html>
